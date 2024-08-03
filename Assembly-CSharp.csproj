@@ -55,7 +55,6 @@
   <ItemGroup>
     <Compile Include="Assets\Scrpits\PlayerMovement.cs" />
     <Compile Include="Assets\Scrpits\MouseMovement.cs" />
-    <Compile Include="Assets\Scrpits\PlayerMovementTutorial.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
