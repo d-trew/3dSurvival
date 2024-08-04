@@ -1,102 +1,151 @@
 using UnityEngine;
 using TMPro;
+
 public class GunSystem : MonoBehaviour
 {
-    //Gun stats
+    // Gun stats
     public int damage;
     public float timeBetweenShooting, spread, range, reloadTime, timeBetweenShots;
     public int magazineSize, bulletsPerTap;
     public bool allowButtonHold;
-    int bulletsLeft, bulletsShot;
+    private int bulletsLeft, bulletsShot;
 
-    //bools 
-    bool shooting, readyToShoot, reloading;
+    // Bools
+    private bool shooting, readyToShoot, reloading;
 
-    //Reference
+    // References
     public Camera fpsCam;
     public Transform attackPoint;
-    public RaycastHit rayHit;
     public LayerMask whatIsEnemy;
 
-    //Graphics
-    public GameObject muzzleFlash, bulletHoleGraphic;
-    //public CamShake camShake;
-    //public float camShakeMagnitude, camShakeDuration;
-    public TextMeshProUGUI text;
+    // Graphics
+    public GameObject muzzleFlashPrefab; // Muzzle flash prefab reference
+    public GameObject bulletHolePrefab;  // Bullet hole prefab reference
+    public TextMeshProUGUI ammoText;
 
     private void Awake()
     {
         bulletsLeft = magazineSize;
         readyToShoot = true;
     }
+
     private void Update()
     {
-        MyInput();
+        HandleInput();
 
-        //SetText
-        text.SetText(bulletsLeft + " / " + magazineSize);
+        // Update ammo text
+        ammoText.SetText($"{bulletsLeft} / {magazineSize}");
     }
-    private void MyInput()
+
+    private void HandleInput()
     {
-        if (allowButtonHold) shooting = Input.GetKey(KeyCode.Mouse0);
-        else shooting = Input.GetKeyDown(KeyCode.Mouse0);
+        // Handle shooting input
+        if (allowButtonHold)
+            shooting = Input.GetKey(KeyCode.Mouse0);
+        else
+            shooting = Input.GetKeyDown(KeyCode.Mouse0);
 
-        if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !reloading) Reload();
+        // Handle reload input
+        if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !reloading)
+            Reload();
 
-        //Shoot
+        // Trigger shooting logic
         if (readyToShoot && shooting && !reloading && bulletsLeft > 0)
         {
             bulletsShot = bulletsPerTap;
             Shoot();
         }
     }
+
     private void Shoot()
     {
         readyToShoot = false;
 
-        //Spread
+        // Spread
         float x = Random.Range(-spread, spread);
         float y = Random.Range(-spread, spread);
 
-        //Calculate Direction with Spread
+        // Calculate direction with spread
         Vector3 direction = fpsCam.transform.forward + new Vector3(x, y, 0);
 
-        //RayCast
-        if (Physics.Raycast(fpsCam.transform.position, direction, out rayHit, range, whatIsEnemy))
+        // Raycast
+        if (Physics.Raycast(fpsCam.transform.position, direction, out RaycastHit rayHit, range, whatIsEnemy))
         {
-            Debug.Log(rayHit.collider.name);
+            Debug.Log("Hit object: " + rayHit.collider.name + " at point: " + rayHit.point);
 
-            //if (rayHit.collider.CompareTag("Enemy"))
-            // rayHit.collider.GetComponent<ShootingAi>().TakeDamage(damage);
+            // If the ray hits an enemy
+            // if (rayHit.collider.CompareTag("Enemy"))
+            //     rayHit.collider.GetComponent<ShootingAi>().TakeDamage(damage);
+
+            // Instantiate bullet hole graphic at hit point
+            if (bulletHolePrefab != null)
+            {
+                GameObject bulletHole = Instantiate(bulletHolePrefab, rayHit.point, Quaternion.LookRotation(rayHit.normal));
+                bulletHole.transform.SetParent(rayHit.collider.transform);
+                Debug.Log("Bullet hole created at: " + rayHit.point);
+
+                // Debugging visibility
+                Renderer renderer = bulletHole.GetComponent<Renderer>();
+                if (renderer != null)
+                {
+                    Debug.Log("Bullet hole renderer found.");
+                    // Check if the shader has a color property
+                    if (renderer.material.HasProperty("_Color"))
+                    {
+                        Debug.Log("Bullet hole material color: " + renderer.material.color);
+                    }
+                    else
+                    {
+                        Debug.Log("Material doesn't support _Color property.");
+                    }
+                }
+                else
+                {
+                    Debug.Log("No renderer found on bullet hole prefab.");
+                }
+            }
+            else
+            {
+                Debug.LogError("Bullet hole prefab is not assigned.");
+            }
+        }
+        else
+        {
+            Debug.Log("Raycast missed.");
         }
 
-        //ShakeCamera
-        //camShake.Shake(camShakeDuration, camShakeMagnitude);
-
-        //Graphics
-        Instantiate(bulletHoleGraphic, rayHit.point, Quaternion.Euler(0, 180, 0));
-        Instantiate(muzzleFlash, attackPoint.position, Quaternion.identity);
+        // Instantiate muzzle flash at attack point
+        if (muzzleFlashPrefab != null)
+        {
+            Instantiate(muzzleFlashPrefab, attackPoint.position, Quaternion.identity);
+            Debug.Log("Muzzle flash instantiated.");
+        }
 
         bulletsLeft--;
         bulletsShot--;
 
-        Invoke("ResetShot", timeBetweenShooting);
+        Invoke(nameof(ResetShot), timeBetweenShooting);
 
         if (bulletsShot > 0 && bulletsLeft > 0)
-            Invoke("Shoot", timeBetweenShots);
+            Invoke(nameof(Shoot), timeBetweenShots);
     }
+
     private void ResetShot()
     {
         readyToShoot = true;
     }
+
     private void Reload()
     {
         reloading = true;
-        Invoke("ReloadFinished", reloadTime);
+        Debug.Log("Reloading...");
+        Invoke(nameof(ReloadFinished), reloadTime);
     }
+
     private void ReloadFinished()
     {
         bulletsLeft = magazineSize;
         reloading = false;
+        Debug.Log("Reload finished.");
     }
 }
