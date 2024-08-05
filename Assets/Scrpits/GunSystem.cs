@@ -16,12 +16,12 @@ public class GunSystem : MonoBehaviour
     // References
     public Camera fpsCam;
     public Transform attackPoint;
+    public RaycastHit rayHit;
     public LayerMask whatIsEnemy;
 
     // Graphics
-    public GameObject muzzleFlashPrefab; // Muzzle flash prefab reference
-    public GameObject bulletHolePrefab;  // Bullet hole prefab reference
-    public TextMeshProUGUI ammoText;
+    public GameObject muzzleFlash, bulletHoleGraphic;
+    public TextMeshProUGUI text;
 
     private void Awake()
     {
@@ -31,25 +31,20 @@ public class GunSystem : MonoBehaviour
 
     private void Update()
     {
-        HandleInput();
+        MyInput();
 
-        // Update ammo text
-        ammoText.SetText($"{bulletsLeft} / {magazineSize}");
+        // Set Text
+        text.SetText(bulletsLeft + " / " + magazineSize);
     }
 
-    private void HandleInput()
+    private void MyInput()
     {
-        // Handle shooting input
-        if (allowButtonHold)
-            shooting = Input.GetKey(KeyCode.Mouse0);
-        else
-            shooting = Input.GetKeyDown(KeyCode.Mouse0);
+        if (allowButtonHold) shooting = Input.GetKey(KeyCode.Mouse0);
+        else shooting = Input.GetKeyDown(KeyCode.Mouse0);
 
-        // Handle reload input
-        if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !reloading)
-            Reload();
+        if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !reloading) Reload();
 
-        // Trigger shooting logic
+        // Shoot
         if (readyToShoot && shooting && !reloading && bulletsLeft > 0)
         {
             bulletsShot = bulletsPerTap;
@@ -65,44 +60,29 @@ public class GunSystem : MonoBehaviour
         float x = Random.Range(-spread, spread);
         float y = Random.Range(-spread, spread);
 
-        // Calculate direction with spread
+        // Calculate Direction with Spread
         Vector3 direction = fpsCam.transform.forward + new Vector3(x, y, 0);
 
-        // Raycast
-        if (Physics.Raycast(fpsCam.transform.position, direction, out RaycastHit rayHit, range, whatIsEnemy))
+        // RayCast
+        if (Physics.Raycast(fpsCam.transform.position, direction, out rayHit, range, whatIsEnemy))
         {
-            Debug.Log("Hit object: " + rayHit.collider.name + " at point: " + rayHit.point);
+            Debug.Log(rayHit.collider.name);
 
             // If the ray hits an enemy
             // if (rayHit.collider.CompareTag("Enemy"))
             //     rayHit.collider.GetComponent<ShootingAi>().TakeDamage(damage);
 
-            // Instantiate bullet hole graphic at hit point
-            if (bulletHolePrefab != null)
+            // Graphics - Instantiate bullet hole and muzzle flash
+            if (bulletHoleGraphic != null)
             {
-                GameObject bulletHole = Instantiate(bulletHolePrefab, rayHit.point, Quaternion.LookRotation(rayHit.normal));
+                GameObject bulletHole = Instantiate(bulletHoleGraphic, rayHit.point, Quaternion.LookRotation(rayHit.normal));
                 bulletHole.transform.SetParent(rayHit.collider.transform);
-                Debug.Log("Bullet hole created at: " + rayHit.point);
 
-                // Debugging visibility
-                Renderer renderer = bulletHole.GetComponent<Renderer>();
-                if (renderer != null)
-                {
-                    Debug.Log("Bullet hole renderer found.");
-                    // Check if the shader has a color property
-                    if (renderer.material.HasProperty("_Color"))
-                    {
-                        Debug.Log("Bullet hole material color: " + renderer.material.color);
-                    }
-                    else
-                    {
-                        Debug.Log("Material doesn't support _Color property.");
-                    }
-                }
-                else
-                {
-                    Debug.Log("No renderer found on bullet hole prefab.");
-                }
+                // Set the scale of the bullet hole to fit the surface properly
+                bulletHole.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f); // Adjust scale as needed
+
+                // Debug the bullet hole instantiation
+                Debug.Log("Bullet hole created at: " + rayHit.point);
             }
             else
             {
@@ -115,19 +95,22 @@ public class GunSystem : MonoBehaviour
         }
 
         // Instantiate muzzle flash at attack point
-        if (muzzleFlashPrefab != null)
+        if (muzzleFlash != null)
         {
-            Instantiate(muzzleFlashPrefab, attackPoint.position, Quaternion.identity);
+            Instantiate(muzzleFlash, attackPoint.position, Quaternion.identity);
             Debug.Log("Muzzle flash instantiated.");
         }
+
+        // Draw a debug ray to visualize the shot
+        Debug.DrawRay(fpsCam.transform.position, direction * range, Color.red, 2f);
 
         bulletsLeft--;
         bulletsShot--;
 
-        Invoke(nameof(ResetShot), timeBetweenShooting);
+        Invoke("ResetShot", timeBetweenShooting);
 
         if (bulletsShot > 0 && bulletsLeft > 0)
-            Invoke(nameof(Shoot), timeBetweenShots);
+            Invoke("Shoot", timeBetweenShots);
     }
 
     private void ResetShot()
@@ -139,7 +122,7 @@ public class GunSystem : MonoBehaviour
     {
         reloading = true;
         Debug.Log("Reloading...");
-        Invoke(nameof(ReloadFinished), reloadTime);
+        Invoke("ReloadFinished", reloadTime);
     }
 
     private void ReloadFinished()
