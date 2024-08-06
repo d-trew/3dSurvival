@@ -20,15 +20,24 @@ public class GunSystem : MonoBehaviour
     public LayerMask whatIsEnemy;
 
     // Graphics
-    public GameObject muzzleFlash, bulletHoleGraphic;
+    [SerializeField] private GameObject bulletHoleGraphic;
+    [SerializeField] private ParticleSystem muzzleFlash;
     public TextMeshProUGUI text;
+
+
+    // Game management
+    private GameTrigger gameTrigger; // Reference to the GameTrigger script
+
 
     private void Awake()
     {
         bulletsLeft = magazineSize;
         readyToShoot = true;
     }
-
+    private void Start()
+    {
+        gameTrigger = FindObjectOfType<GameTrigger>();
+    }
     private void Update()
     {
         MyInput();
@@ -67,19 +76,26 @@ public class GunSystem : MonoBehaviour
         if (Physics.Raycast(fpsCam.transform.position, direction, out rayHit, range, whatIsEnemy))
         {
             Debug.Log(rayHit.collider.name);
+            Debug.Log(rayHit.collider.gameObject);
 
             // If the ray hits an enemy
             // if (rayHit.collider.CompareTag("Enemy"))
             //     rayHit.collider.GetComponent<ShootingAi>().TakeDamage(damage);
 
+
+            // Check if ray hit a target
+            if (rayHit.collider.CompareTag("TargetCentre") || rayHit.collider.CompareTag("TargetMiddle") || rayHit.collider.CompareTag("TargetOuter"))
+            {
+                gameTrigger.RegisterHit(rayHit.collider.tag);
+            }
             // Graphics - Instantiate bullet hole and muzzle flash
             if (bulletHoleGraphic != null)
             {
-                GameObject bulletHole = Instantiate(bulletHoleGraphic, rayHit.point, Quaternion.LookRotation(rayHit.normal));
+                //Instantiate(DebugObj, rayHit.point, Quaternion.LookRotation(rayHit.normal));
+                GameObject bulletHole = Instantiate(bulletHoleGraphic, rayHit.point+rayHit.normal*0.03f, Quaternion.LookRotation(rayHit.normal));
                 bulletHole.transform.SetParent(rayHit.collider.transform);
 
-                // Set the scale of the bullet hole to fit the surface properly
-                bulletHole.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f); // Adjust scale as needed
+             
 
                 // Debug the bullet hole instantiation
                 Debug.Log("Bullet hole created at: " + rayHit.point);
@@ -94,12 +110,8 @@ public class GunSystem : MonoBehaviour
             Debug.Log("Raycast missed.");
         }
 
-        // Instantiate muzzle flash at attack point
-        if (muzzleFlash != null)
-        {
-            Instantiate(muzzleFlash, attackPoint.position, Quaternion.identity);
-            Debug.Log("Muzzle flash instantiated.");
-        }
+        muzzleFlash.Play();
+        Debug.Log("Muzzle flash instantiated.");
 
         // Draw a debug ray to visualize the shot
         Debug.DrawRay(fpsCam.transform.position, direction * range, Color.red, 2f);
