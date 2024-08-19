@@ -5899,13 +5899,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 890582089}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.14629896, y: -0, z: -0, w: 0.98924047}
-  m_LocalPosition: {x: 0, y: 1.14, z: -2.18}
+  m_LocalRotation: {x: 0.07610995, y: 0, z: 0, w: 0.9970995}
+  m_LocalPosition: {x: 0.69, y: 0.68, z: -2.18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1359596221}
-  m_LocalEulerAnglesHint: {x: 16.825, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 8.73, y: 0, z: 0}
 --- !u!20 &890582091
 Camera:
   m_ObjectHideFlags: 0
@@ -6486,7 +6486,7 @@ GameObject:
   - component: {fileID: 1057532601}
   - component: {fileID: 1057532600}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Crosshair
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7066,8 +7066,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1359596221}
   - component: {fileID: 1359596220}
-  - component: {fileID: 1359596219}
   - component: {fileID: 1359596218}
+  - component: {fileID: 1359596219}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -7791,14 +7791,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1359596221}
     m_Modifications:
-    - target: {fileID: 2558831684766390234, guid: 3c35869ce84f9c74ab8199a2f5023ac9, type: 3}
-      propertyPath: m_Controller
+    - target: {fileID: 500993524107995348, guid: 3c35869ce84f9c74ab8199a2f5023ac9, type: 3}
+      propertyPath: text
       value: 
-      objectReference: {fileID: 9100000, guid: 2f2932b7ea8e3fc4b8dfc75f06583a60, type: 2}
+      objectReference: {fileID: 1681753122}
+    - target: {fileID: 500993524107995348, guid: 3c35869ce84f9c74ab8199a2f5023ac9, type: 3}
+      propertyPath: fpsCam
+      value: 
+      objectReference: {fileID: 890582091}
     - target: {fileID: 4661996844722073585, guid: 3c35869ce84f9c74ab8199a2f5023ac9, type: 3}
       propertyPath: m_Name
       value: Y Bot
       objectReference: {fileID: 0}
+    - target: {fileID: 5432889163481145416, guid: 3c35869ce84f9c74ab8199a2f5023ac9, type: 3}
+      propertyPath: fpsCam
+      value: 
+      objectReference: {fileID: 890582090}
+    - target: {fileID: 5432889163481145416, guid: 3c35869ce84f9c74ab8199a2f5023ac9, type: 3}
+      propertyPath: player
+      value: 
+      objectReference: {fileID: 1359596221}
     - target: {fileID: 5474527504370169163, guid: 3c35869ce84f9c74ab8199a2f5023ac9, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

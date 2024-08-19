@@ -36,10 +36,16 @@ public class ThirdPersonPlayerController : MonoBehaviour
         movement.Normalize();
 
         // multiplier depends on animation
-        this.transform.position += movement * 0.1f;
+        this.transform.position += movement * 0.02f;
 
         this.anim.SetFloat("vertical", vertical);
         this.anim.SetFloat("horizontal", horizontal);
+
+        // Reset dance trigger if moving
+        if (horizontal != 0 || vertical != 0)
+        {
+            anim.ResetTrigger("dance");
+        }
     }
 
     private void Grounded()
@@ -71,7 +77,7 @@ public class ThirdPersonPlayerController : MonoBehaviour
         // Check if the 'Y' key is pressed to trigger a dance
         if (Input.GetKeyDown(KeyCode.Y))
         {
-            anim.SetTrigger("Dance");
+            anim.SetTrigger("dance");
         }
     }
 }
